@@ -1,9 +1,10 @@
 <launch>
 
   <arg name="camera_number" default="21511083"/>
-  <arg name="camera_file" value="ical_srv_camera.yaml" />
-  <arg name="target_file" value="ical_srv_target.yaml" />
+  <arg name="camera_file" default="ical_srv_camera.yaml" />
+  <arg name="target_file" default="ical_srv_target.yaml" />
   <arg name="launch_camera" default="false"/>
+  <arg name="yaml_file_path" default="$(find intrinsic_cal)/yaml/" />
   
   <include if="$(arg launch_camera)" file="$(find industrial_extrinsic_cal)/launch/basler_camera.launch" >
      <param name="camera_number" value="$(arg camera_number)"/>
@@ -11,7 +12,7 @@
   </include>
 
   <node pkg="intrinsic_cal" type="ical_srv" name="ical_srv" output="screen" >
-          <param name="yaml_file_path" value="$(find intrinsic_cal)/yaml/" />
+          <param name="yaml_file_path" value="$(arg yaml_file_path)" />
           <param name="camera_file" value="$(arg camera_file)" />
           <param name="target_file" value="$(arg target_file)" />
   </node>
