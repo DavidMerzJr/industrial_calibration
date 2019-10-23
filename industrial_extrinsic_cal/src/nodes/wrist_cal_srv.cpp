@@ -90,7 +90,7 @@ public:
       ROS_ERROR("Must set param: target_mount_frame, this defines the tf-frame on which the target is mounted");
     }
     if(!priv_nh.getParam("camera_mount_frame", camera_mount_frame)){
-      ROS_ERROR("Must set param: target_mount_frame, this defines the tf-frame on which the target is mounted");
+      ROS_ERROR("Must set param: camera_mount_frame, this defines the tf-frame on which the target is mounted");
     }
     
     priv_nh.getParam("save_data", save_data_);
