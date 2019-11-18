@@ -243,5 +243,7 @@ void DepthCorrectionNodelet::correctionVersionOne(const pcl::PointCloud<pcl::Poi
   pcl_pub_.publish(published_cloud);
 }
 
-PLUGINLIB_EXPORT_CLASS(rgbd_depth_correction::DepthCorrectionNodelet, nodelet::Nodelet);
+//PLUGINLIB_EXPORT_CLASS(rgbd_depth_correction::DepthCorrectionNodelet, nodelet::Nodelet);
+PLUGINLIB_EXPORT_CLASS(rgbd_depth_correction::DepthCorrectionNodelet,
+                        nodelet::Nodelet);
 }
