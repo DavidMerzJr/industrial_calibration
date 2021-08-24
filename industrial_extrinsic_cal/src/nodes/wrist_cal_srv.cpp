@@ -325,8 +325,8 @@ public:
     
 
     if (save_data_){
-      char pose_scene_chars[8];
-      char image_scene_chars[7];
+      char pose_scene_chars[60];
+      char image_scene_chars[60];
       sprintf(pose_scene_chars,"_%03d.yaml",scene_);
       sprintf(image_scene_chars,"_%03d.jpg",scene_);
       std::string image_file = all_cameras_[0]->camera_name_ + std::string(image_scene_chars);
@@ -335,9 +335,13 @@ public:
       std::string camera_extrinsics = all_cameras_[0]->camera_name_ + extrinsics_scene_d_yaml; // write pose to data_directory_/camera_name_extrinsics_sceneID.yaml
       std::string target_extrinsics = all_targets_[0]->target_name_ + extrinsics_scene_d_yaml; // write pose to data_directory_/target_name_extrinsics_sceneID.yaml
       all_cameras_[0]->camera_observer_->save_current_image(scene_,image_file);
+      ROS_ERROR("here 1");
       targetm_to_cameram_TI_->saveCurrentPose(scene_,camera_mount_to_target_mount);
+      ROS_ERROR("here 2");
       all_cameras_[0]->transform_interface_->saveCurrentPose(scene_,camera_extrinsics);
+      ROS_ERROR("here 3");
       all_targets_[0]->transform_interface_->saveCurrentPose(scene_,target_extrinsics);
+      ROS_ERROR("here 4");
     }// end save_data_
     else{
       ROS_ERROR("save_data_ not set");
@@ -584,8 +588,8 @@ public:
     
     bool data_read_ok=true;
     while(data_read_ok){
-      char pose_scene_chars[8];
-      char image_scene_chars[7];
+      char pose_scene_chars[30];
+      char image_scene_chars[30];
       std::string image_file = all_cameras_[0]->camera_name_ + std::string(image_scene_chars);
       std::string extrinsics_scene_d_yaml = std::string("_extrinsics") + std::string(pose_scene_chars);
       std::string camera_mount_to_target_mount= std::string("Cm_to_Tm") + std::string(pose_scene_chars);  // write pose info to data_directory_/Cm_to_tm_sceneID.yaml
