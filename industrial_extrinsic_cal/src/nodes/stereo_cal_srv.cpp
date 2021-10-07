@@ -296,8 +296,8 @@ public:
 	  P_->AddResidualBlock(cost_function, NULL, target_pb, right_extrinsics);
 	}  // for each point on the target
       if (save_data_){
-	  char pose_scene_chars[8];
-	  char image_scene_chars[7];
+          char pose_scene_chars[30];
+          char image_scene_chars[30];
 	  sprintf(pose_scene_chars,"_%03d.yaml",scene_);
 	  sprintf(image_scene_chars,"_%03d.jpg",scene_);
 	  std::string image1_file = all_cameras_[0]->camera_name_ + std::string(image_scene_chars);

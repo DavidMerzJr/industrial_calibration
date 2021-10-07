@@ -325,8 +325,8 @@ public:
     
 
     if (save_data_){
-      char pose_scene_chars[8];
-      char image_scene_chars[7];
+      char pose_scene_chars[60];
+      char image_scene_chars[60];
       sprintf(pose_scene_chars,"_%03d.yaml",scene_);
       sprintf(image_scene_chars,"_%03d.jpg",scene_);
       std::string image_file = all_cameras_[0]->camera_name_ + std::string(image_scene_chars);
@@ -584,8 +584,8 @@ public:
     
     bool data_read_ok=true;
     while(data_read_ok){
-      char pose_scene_chars[8];
-      char image_scene_chars[7];
+      char pose_scene_chars[30];
+      char image_scene_chars[30];
       std::string image_file = all_cameras_[0]->camera_name_ + std::string(image_scene_chars);
       std::string extrinsics_scene_d_yaml = std::string("_extrinsics") + std::string(pose_scene_chars);
       std::string camera_mount_to_target_mount= std::string("Cm_to_Tm") + std::string(pose_scene_chars);  // write pose info to data_directory_/Cm_to_tm_sceneID.yaml
