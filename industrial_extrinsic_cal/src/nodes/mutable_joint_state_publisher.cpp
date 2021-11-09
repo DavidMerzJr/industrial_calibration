@@ -187,7 +187,7 @@ int main(int argc, char** argv)
   industrial_extrinsic_cal::MutableJointStatePublisher MJSP(nh);
 
   int publish_rate;
-  nh.param<int>("publish_rate", publish_rate, 10);
+  nh.param<int>("publish_rate", publish_rate, 100);
   ros::Rate loop_rate(publish_rate);
   while (ros::ok())
   {

@@ -55,7 +55,7 @@ class ROSTransformInterface : public TransformInterface
     // get all the information from tf and from the mutable joint state publisher
     tf::StampedTransform tf_transform;
     ros::Time now = ros::Time::now();
-    while (!tf_listener.waitForTransform(from_frame, to_frame, now, ros::Duration(1.0)))
+    while (!tf_listener.waitForTransform(from_frame, to_frame, now, ros::Duration(4.0)))
       {
 	now = ros::Time::now();
 	ROS_INFO("waiting for tranform from %s to %s", from_frame.c_str(), to_frame.c_str());

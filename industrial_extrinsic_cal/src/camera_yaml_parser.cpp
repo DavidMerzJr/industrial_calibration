@@ -27,6 +27,7 @@ bool parseCameras(std::string& cameras_input_file, vector<shared_ptr<Camera> >& 
 {
   Node camera_doc;
   bool rtn = true;
+  ROS_ERROR("Here 1");
   try
   {
     Node camera_doc;
@@ -41,6 +42,7 @@ bool parseCameras(std::string& cameras_input_file, vector<shared_ptr<Camera> >& 
     const YAML::Node& camera_parameters = parseNode(camera_doc, "static_cameras");
     if (camera_parameters)
     {
+      ROS_ERROR("Here 4, camera_parameters.size = %i", camera_parameters.size());
       for (unsigned int i = 0; i < camera_parameters.size(); i++)
       {
         shared_ptr<Camera> temp_camera = parseSingleCamera(camera_parameters[i]);
@@ -48,7 +50,7 @@ bool parseCameras(std::string& cameras_input_file, vector<shared_ptr<Camera> >& 
         n_static++;
       }
     }
-
+    ROS_ERROR("Here 2");
     // read in all moving cameras
     int n_moving = 0;
     const YAML::Node& camera_parameters2 = parseNode(camera_doc, "moving_cameras");
@@ -72,6 +74,7 @@ bool parseCameras(std::string& cameras_input_file, vector<shared_ptr<Camera> >& 
   }
   catch (YAML::ParserException& e)
   {
+    ROS_ERROR("Here 2");
     ROS_ERROR_STREAM("Camera parsing failure " << e.what());
     rtn = false;
   }
@@ -79,6 +82,7 @@ bool parseCameras(std::string& cameras_input_file, vector<shared_ptr<Camera> >& 
 }
 shared_ptr<Camera> parseSingleCamera(const Node& node)
 {
+  ROS_ERROR("single camera parse 1");
   shared_ptr<Camera> temp_camera;
   try
   {
@@ -102,7 +106,7 @@ shared_ptr<Camera> parseSingleCamera(const Node& node)
     if (parseString(node, "left_stereo_pair_name", temp_left_stereo_camera)){
       temp_is_right_stereo_camera = true;
     }
-
+    ROS_ERROR("single camera parse 2");
     Pose6d pose;
     bool transform_available = parsePose(node, pose);
     if (transform_available)
@@ -115,7 +119,7 @@ shared_ptr<Camera> parseSingleCamera(const Node& node)
       temp_parameters.position[2] = pose.z;
     }
     boost::shared_ptr<ROSCameraObserver> camera_observer = boost::make_shared<ROSCameraObserver>(temp_topic, temp_name);
-
+    ROS_ERROR("single camera parse 3");
     if (!camera_observer->pullCameraInfo(temp_parameters.focal_length_x, temp_parameters.focal_length_y,
                                         temp_parameters.center_x, temp_parameters.center_y,
                                         temp_parameters.distortion_k1, temp_parameters.distortion_k2,
@@ -135,7 +139,7 @@ shared_ptr<Camera> parseSingleCamera(const Node& node)
       if (!parseInt(node, "image_height", temp_parameters.height)) ROS_ERROR("Can't read image_height");
       if (!parseInt(node, "image_width", temp_parameters.width)) ROS_ERROR("Can't read image_width");
     }
-
+    ROS_ERROR("single camera parse 4");
     // create a shared camera and a shared transform interface
     temp_camera = boost::make_shared<Camera>(temp_name, temp_parameters, false);
     temp_camera->trigger_ = parseTrigger(node, trigger_name);
@@ -144,9 +148,12 @@ shared_ptr<Camera> parseSingleCamera(const Node& node)
       temp_camera->left_stereo_camera_name_ = temp_left_stereo_camera;
       // NOTE, left_stereo_camera_ is found from ceres_blocks_ after all are parsed
     }
+    ROS_ERROR("parsing Transform Interface");
     shared_ptr<TransformInterface> temp_ti =
         parseTransformInterface(node, transform_interface, camera_optical_frame, pose);
+    ROS_ERROR("camera setting transform interface");
     temp_camera->setTransformInterface(temp_ti);  // install the transform interface
+        ROS_ERROR("done camera setting transform interface");
     if (transform_available)
     {
       ros::Duration(0.25).sleep();  // wait for listeners to wake up
@@ -154,13 +161,17 @@ shared_ptr<Camera> parseSingleCamera(const Node& node)
     }
     else
     {
+        ROS_ERROR("trying to pull from transform interface");
       temp_camera->pullTransform();
+      ROS_ERROR("done pulling");
     }
     temp_camera->camera_observer_ = camera_observer; 
     temp_camera->camera_observer_->image_directory_ = image_directory;
+    ROS_ERROR("single camera parse 5");
   }
   catch (YAML::ParserException& e)
   {
+    ROS_ERROR("single camera parse 6");
     ROS_INFO_STREAM("Failed to read in moving cameras from yaml file ");
     ROS_INFO_STREAM("camera name    = " << temp_camera->camera_name_.c_str());
     ROS_INFO_STREAM("angle_axis_ax  = " << temp_camera->camera_parameters_.angle_axis[0]);
@@ -280,6 +291,7 @@ shared_ptr<TransformInterface> parseTransformInterface(const Node& node, std::st
   }
   else if (name == std::string("ros_camera_housing_cti"))
   {
+      ROS_ERROR("ros_camera_housing_cti");
     if (!parseString(node, "camera_housing_frame", camera_housing_frame)) ROS_ERROR("Can't read camera_housing_frame");
     if (!parseString(node, "camera_mounting_frame", camera_mounting_frame)) ROS_ERROR("Can't read camera_mounting_frame");
     temp_ti = boost::make_shared<ROSCameraHousingCalTInterface>(frame, camera_mounting_frame, camera_housing_frame );
@@ -307,6 +319,7 @@ shared_ptr<TransformInterface> parseTransformInterface(const Node& node, std::st
     ROS_ERROR("Unimplemented Transform Interface: %s", name.c_str());
     temp_ti = boost::make_shared<DefaultTransformInterface>();
   }
+        ROS_ERROR("done parsing transform interface");
   return (temp_ti);
 }
 

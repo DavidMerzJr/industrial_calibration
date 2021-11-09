@@ -74,6 +74,8 @@ public:
     std::string target_mount_frame;
     std::string camera_mount_frame;
     std::string camera_file, target_file;
+
+    ROS_ERROR("starting wrist call service node");
     
     // load cameras and targets
     if(!priv_nh.getParam("yaml_file_path", yaml_file_path_)){
@@ -93,6 +95,7 @@ public:
       ROS_ERROR("Must set param: target_mount_frame, this defines the tf-frame on which the target is mounted");
     }
     
+    ROS_ERROR("got camera's and targets");
     priv_nh.getParam("save_data", save_data_);
     priv_nh.getParam("data_directory", data_directory_);
     camera_file_ = yaml_file_path_ + camera_file ;
@@ -105,20 +108,25 @@ public:
       ROS_ERROR("can't load the camera from %s", (yaml_file_path_+camera_file_).c_str());
       exit(1);
     }
+    ROS_ERROR("done load_camera()");
     if(!load_target()){
       ROS_ERROR("can't load the target from %s", (yaml_file_path_+target_file_).c_str());
       exit(1);
     }
+    ROS_ERROR("Before target to cam");
 
     // initialize the target_mount to camera_mount transform listener
     targetm_to_cameram_TI_ = new industrial_extrinsic_cal::ROSListenerTransInterface(target_mount_frame);
     targetm_to_cameram_TI_->setReferenceFrame(camera_mount_frame);
     targetm_to_cameram_TI_->setDataDirectory(data_directory_);
 
+    ROS_ERROR("Before Init blocks");
+
     // intiialize ceres blocks
     init_blocks();
 
     // advertise services
+    ROS_ERROR("Loading services");
     start_server_       = nh_.advertiseService( "WristCalSrvStart",  &wristCalServiceNode::startCallBack, this);
     load_server_        = nh_.advertiseService( "WristCalSrvLoad",   &wristCalServiceNode::loadCallBack, this);
     observation_server_ = nh_.advertiseService( "WristCalSrvObs",    &wristCalServiceNode::observationCallBack, this);
@@ -176,17 +184,20 @@ public:
   }; // end init_blocks()
 
   // read the camera yaml file
-  bool load_camera() 
+  bool load_camera()
   {
     bool rtn = true;
+    ROS_ERROR("starting camera parse, camera_file = %s", camera_file_.c_str());
     if (!parseCameras(camera_file_, all_cameras_))
       {
 	ROS_ERROR("failed to parse cameras from %s", camera_file_.c_str());
 	rtn = false;
       }
+    ROS_ERROR("starting camera loop");
     for(int i=0;i<(int)all_cameras_.size();i++){
       all_cameras_[i]->transform_interface_->setDataDirectory(data_directory_);
     }
+    ROS_ERROR("parse all camera");
     return rtn;
   };// end of load_camera()
 
@@ -194,16 +205,17 @@ public:
   bool load_target()
   {
     bool rtn = true;
-
+    ROS_ERROR("starting target parse");
     if (!parseTargets(target_file_, all_targets_))
       {
 	ROS_ERROR("failed to parse targets from %s", target_file_.c_str());
 	rtn = false;
       }
+    ROS_ERROR("starting target loop");
     for(int i=0;i<(int)all_targets_.size();i++){
       all_targets_[i]->transform_interface_->setDataDirectory(data_directory_);
     }
-
+  ROS_ERROR("parse all targets");
     return rtn;
   }; // end load_target()
 
@@ -300,7 +312,7 @@ public:
 		P.show("camera to world initial conditions");
 		Pose6d TP(target_pb[3],target_pb[4],target_pb[5],target_pb[0],target_pb[1],target_pb[2]);
 		TP.show("tool0 to Target initial conditions");
-		//Pose6d T;
+    //Pose6d T;
 		//T = P*TtoC;
 		//	Pose6d T2;
 		//	T2 = T*TP;
@@ -325,8 +337,8 @@ public:
     
 
     if (save_data_){
-      char pose_scene_chars[8];
-      char image_scene_chars[7];
+      char pose_scene_chars[30];
+      char image_scene_chars[30];
       sprintf(pose_scene_chars,"_%03d.yaml",scene_);
       sprintf(image_scene_chars,"_%03d.jpg",scene_);
       std::string image_file = all_cameras_[0]->camera_name_ + std::string(image_scene_chars);
@@ -584,8 +596,8 @@ public:
     
     bool data_read_ok=true;
     while(data_read_ok){
-      char pose_scene_chars[8];
-      char image_scene_chars[7];
+      char pose_scene_chars[30];
+      char image_scene_chars[30];
       std::string image_file = all_cameras_[0]->camera_name_ + std::string(image_scene_chars);
       std::string extrinsics_scene_d_yaml = std::string("_extrinsics") + std::string(pose_scene_chars);
       std::string camera_mount_to_target_mount= std::string("Cm_to_Tm") + std::string(pose_scene_chars);  // write pose info to data_directory_/Cm_to_tm_sceneID.yaml
@@ -612,7 +624,7 @@ public:
 	ROS_INFO("Found %d observations", (int)camera_observations.size());
 	
 	// add observations to problem
-	num_observations = (int)camera_observations.size();
+  num_observations = (int)camera_observations.size();
 	if (num_observations != total_pts)
 	  {
 	    ROS_ERROR("Target Locator could not find all targets found %d out of %d", num_observations, total_pts);
@@ -633,7 +645,7 @@ public:
 		double fx = intrinsics[0];
 		double fy = intrinsics[1];
 		double cx = intrinsics[2];
-		double cy = intrinsics[3];
+    double cy = intrinsics[3];
 		CostFunction* cost_function = industrial_extrinsic_cal::LinkTargetCameraReprjErrorPK::Create(image_x, image_y, fx, fy, cx, cy, TtoC, point);
 		P_->AddResidualBlock(cost_function, NULL, extrinsics, target_pb);
 	      }  // for each observation at this camera_location

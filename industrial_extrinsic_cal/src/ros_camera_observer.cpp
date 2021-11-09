@@ -701,6 +701,7 @@ bool ROSCameraObserver::pushCameraInfo(double& fx, double& fy, double& cx, doubl
 bool ROSCameraObserver::pullCameraInfo(double& fx, double& fy, double& cx, double& cy, double& k1, double& k2,
                                        double& k3, double& p1, double& p2)
 {
+  ROS_ERROR("IN pull cameraInfo 1");
   if (camera_name_.empty())
   {
     ROS_ERROR("camera name is not set, cannot pull camera info from topic");
@@ -737,11 +738,13 @@ bool ROSCameraObserver::pullCameraInfo(double& fx, double& fy, double& cx, doubl
 bool ROSCameraObserver::pullCameraInfo(double& fx, double& fy, double& cx, double& cy, double& k1, double& k2,
                                        double& k3, double& p1, double& p2, int& width, int& height)
 {
+  ROS_ERROR("IN pull cameraInfo 2");
   if (camera_name_.empty())
   {
     ROS_ERROR("camera name is not set, cannot pull camera info from topic");
     return (false);
   }
+  ROS_ERROR("IN pull cameraInfo 2_1");
   std::string camera_info_topic = "/" + camera_name_ + "/camera_info";
   const sensor_msgs::CameraInfoConstPtr& info_msg =
       ros::topic::waitForMessage<sensor_msgs::CameraInfo>(camera_info_topic, ros::Duration(10.0));
@@ -751,6 +754,7 @@ bool ROSCameraObserver::pullCameraInfo(double& fx, double& fy, double& cx, doubl
               camera_info_topic.c_str());
     return (false);
   }
+  ROS_ERROR("IN pull cameraInfo 2_2");
   if (info_msg->K[0] == 0)
   {
     ROS_ERROR("camera info message not correct for camera %s on topic %s", camera_name_.c_str(),
@@ -768,6 +772,7 @@ bool ROSCameraObserver::pullCameraInfo(double& fx, double& fy, double& cx, doubl
   cy = info_msg->K[5];
   width = info_msg->width;
   height = info_msg->height;
+  ROS_ERROR("IN pull cameraInfo 2_3");
   return (true);
 }
 

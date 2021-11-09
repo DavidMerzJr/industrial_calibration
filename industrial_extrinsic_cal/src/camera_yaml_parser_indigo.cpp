@@ -24,12 +24,14 @@ namespace industrial_extrinsic_cal
 {
 void parseCameras(ifstream& cameras_input_file, vector<shared_ptr<Camera> >& cameras)
 {
+  ROS_ERROR("here 1");
   Node camera_doc = YAML::LoadFile(cameras_input_file.c_str());
 
   // read in all static cameras
   cameras.clear();
   Node camera_parameters = camera_doc("static_cameras");
   ROS_INFO_STREAM("Found " << camera_parameters.size() << " static cameras ");
+  ROS_ERROR("here 2");
   for (unsigned int i = 0; i < camera_parameters.size(); i++)
   {
     shared_ptr<Camera> temp_camera = parseSingleCamera(camera_parameters[i]);
@@ -38,6 +40,7 @@ void parseCameras(ifstream& cameras_input_file, vector<shared_ptr<Camera> >& cam
 
   // read in all moving cameras
   camera_parameters = camera_doc("moving_cameras");
+  ROS_ERROR("here 3");
   ROS_INFO_STREAM("Found " << camera_parameters.size() << " moving cameras ");
   for (unsigned int i = 0; i < camera_parameters.size(); i++)
   {
@@ -45,6 +48,7 @@ void parseCameras(ifstream& cameras_input_file, vector<shared_ptr<Camera> >& cam
     temp_camera->is_moving_ = true;
     cameras.push_back(temp_camera);
   }
+  ROS_ERROR("here 4");
   ROS_INFO_STREAM("Successfully read in " << (int)cameras.size() << " cameras");
 }
 

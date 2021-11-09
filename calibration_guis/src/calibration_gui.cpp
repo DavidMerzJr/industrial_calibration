@@ -219,13 +219,14 @@ void calPanel::resetClicked ()
 
     ros::NodeHandle pnh("~");
     std::string bcn = calibration_selection_->currentText().toStdString().c_str();
-    std::string start_service_name = "/" + bcn + "Start";
+    std::string start_service_name =  bcn + "Start";
     std::string run_service_name   = "/" + bcn + "Run";
     std::string obs_service_name   = "/" + bcn + "Obs";
     std::string save_service_name  = "/" + bcn + "Save";
     std::string load_service_name  = "/" + bcn + "Load";
     std::string cov_service_name   = "/" + bcn + "Cov";
 
+    ROS_ERROR("obs_service_name = %s",start_service_name.c_str());
     start_client_ = pnh.serviceClient<std_srvs::Trigger>(start_service_name);
     obs_client_   = pnh.serviceClient<std_srvs::Trigger>(obs_service_name);
     run_client_   = pnh.serviceClient<industrial_extrinsic_cal::cal_srv_solve>(run_service_name);
