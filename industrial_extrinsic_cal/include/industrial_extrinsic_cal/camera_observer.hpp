@@ -19,11 +19,12 @@
 #ifndef CAMERA_OBSERVER_HPP_
 #define CAMERA_OBSERVER_HPP_
 
-#include <industrial_extrinsic_cal/basic_types.h> /* Target,Roi,Observation,CameraObservations */
-#include <industrial_extrinsic_cal/target.h>      /* Roi,Observation,CameraObservations */
-#include <industrial_extrinsic_cal/ceres_costs_utils.h>
 #include <opencv2/opencv.hpp>
 #include <sys/stat.h>
+
+#include <industrial_extrinsic_cal/basic_types.h> /* Target,Roi,Observation,CameraObservations */
+#include <industrial_extrinsic_cal/ceres_costs_utils.h>
+#include <industrial_extrinsic_cal/target.h>      /* Roi,Observation,CameraObservations */
 
 namespace industrial_extrinsic_cal
 {
@@ -51,7 +52,7 @@ class CameraObserver
 {
 public:
   /** @brief Default destructor */
-  virtual ~CameraObserver(){};
+  virtual ~CameraObserver(){}
 
   /** @brief add a target to look for */
   /** @param targ a target to look for */
@@ -123,14 +124,14 @@ public:
   void set_image_directory(std::string dir_name)
   {
     image_directory_ = dir_name;
-  };
+  }
 
   /** @brief gets directory for saving and restoring images */
   /** @param dir_name, the directory path */
   std::string get_image_directory()
   {
     return (image_directory_);
-  };
+  }
 
   /** @brief saves the latest image to the image_directory_ with the provided filename
    *  if the filename is a null string, the name is built
@@ -158,7 +159,7 @@ public:
       return (false);
     }
     return (true);
-  };
+  }
 
   /** @brief loads the latest image from the image_directory_ with the provided filename
    *  if the filename is a null string, the filename is checked
@@ -189,12 +190,13 @@ public:
       ROS_ERROR("failed to find %s", full_image_file_path_name.c_str());
       return (false);
     }
-  };
+  }
+
   inline bool exists_test(const std::string& name)
   {
     struct stat buffer;
     return (stat(name.c_str(), &buffer) == 0);
-  };  // end exists_test
+  }  // end exists_test
 
   /** @brief load image from the image_directory_ with the provided filename
    *  if the filename is a null string, the name is built
@@ -217,7 +219,7 @@ public:
     }
     setCurrentImage(cv::imread(full_file_path_name));
     return (true);
-  };
+  }
 
   /**
    *  @brief get current image
@@ -227,6 +229,7 @@ public:
   {
     return (last_raw_image_);
   }
+
   /**
    *  @brief set current image
    *  @param image set the current image to this one
@@ -259,6 +262,7 @@ public:
     selected_point_index.push_back(rows * cols - cols - 2);  // nearby to point3
     selected_point_index.push_back(rows * cols - 2);         // nearby to point4
     selected_point_index.push_back(rows * cols / 2);         // middle point
+
     // build matrix of type Ax=b where A x is the unknown elements of the proclivity matrix "alpha"
     int row = 0;
     for (int i = 0; i < (int)selected_point_index.size(); i++)
@@ -303,22 +307,24 @@ public:
     P.at<double>(2, 1) = Alpha.at<double>(7);
     P.at<double>(2, 2) = 1.0;
 
-    /*
-    ROS_ERROR("Proclivity=");
-    ROS_ERROR("[ %8.3lf %8.3lf %8.3lf ",  P.at<double>(0,0), P.at<double>(0,1), P.at<double>(0,2));
-    ROS_ERROR("  %8.3lf %8.3lf %8.3lf ",  P.at<double>(1,0), P.at<double>(1,1), P.at<double>(1,2));
-    ROS_ERROR("  %8.3lf %8.3lf %8.3lf ]", P.at<double>(2,0), P.at<double>(2,1), P.at<double>(2,2));
-    */
-    // check the proclivity of every observation
+    // check the proclivity (error between observed position of point and observed position of target) of every observation
     bool rtn = true;
     double ave_error = 0.0;
+    double max_error = 0.0;
     for (int i = 0; i < (int)CO.size(); i++)
     {
+      // pi is the id of the point in the target, numbered left to right and top to bottom
       int pi = CO[i].point_id;
+
+      // Ui and Vi are the locations of the point in image space
       double Ui = CO.at(pi).image_loc_x;
       double Vi = CO.at(pi).image_loc_y;
+
+      // xi and yi are the the locations of the point relative to the origin of the target
       double xi = target->pts_[pi].x;
       double yi = target->pts_[pi].y;
+
+      // Not sure what this one is
       double ki = 1.0 / (Alpha.at<double>(6) * xi + Alpha.at<double>(7) * yi + 1.0);
       cv::Mat UV(3, 1, CV_64F);
       cv::Mat X(3, 1, CV_64F);
@@ -326,20 +332,39 @@ public:
       X.at<double>(1) = yi;
       X.at<double>(2) = 1.0;
       UV = ki * P * X;
+
+      // EU and EV seem to be errors in U and V (image coordinates, therefore pixels) at each point
       double EU = Ui - UV.at<double>(0);
       double EV = Vi - UV.at<double>(1);
+
+      // Add the magnitude of the [EU, EV] error to the accumulator
       ave_error += sqrt(EU * EU + EV * EV);
+
+      // If the error for this (and therefore any) point was too large, then throw an error and fail the proclivity check
       if (fabs(EU) > 5.0 || fabs(EV) > 5.0)
       {
         ROS_ERROR("pi = %d %8.3lf %8.3lf Ui Vi = %8.3lf %8.3lf UV = %8.3lf %8.3lf Error: %8.3lf %8.3lf", pi, xi, yi, Ui,
                   Vi, UV.at<double>(0), UV.at<double>(1), EU, EV);
         rtn = false;
+        if (fabs(EU) > max_error)
+          max_error = fabs(EU);
+        if (fabs(EV) > max_error)
+          max_error = fabs(EV);
       }
     }  // done checking proclivities
+
+    // Report the final average error
     ave_error = ave_error / (int)CO.size();
     ROS_INFO("average proclivity error = %8.3lf", ave_error);
+
+    // In extremely large targets, a few points can be bad but the average error still be tiny
+    if (max_error < 6.5 && ave_error < 2.0)
+    {
+      rtn = true;
+    }
+
     return (rtn);
-  };
+  }
 
   cv::Mat last_raw_image_;      /**< the image last received */
   std::string image_directory_; /*!< string directory for saving and loading images */
