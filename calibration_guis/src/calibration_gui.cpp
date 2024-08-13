@@ -25,6 +25,7 @@ calPanel::calPanel(QWidget* parent) : rviz::Panel(parent)
 {
   allowed_residual_ = new QLineEdit(parent);
   calibration_selection_ = new QComboBox(parent);
+  camera_name_ = new QPlainTextEdit(parent);
 
   // this client does not change with the type of calibration
   ros::NodeHandle pnh("~");
@@ -71,6 +72,7 @@ calPanel::calPanel(QWidget* parent) : rviz::Panel(parent)
 
   controls_layout->addWidget(cal_type_sel_lb_, 0, 0);
   controls_layout->addWidget(calibration_selection_, 0, 1);
+  controls_layout->addWidget(camera_name_, 0, 2);
 
   controls_layout->addWidget(reset_button, 1, 0);  // reset
   controls_layout->addWidget(load_button, 1, 1);   // Load
@@ -99,6 +101,7 @@ calPanel::calPanel(QWidget* parent) : rviz::Panel(parent)
   connect(covariance_button, SIGNAL(clicked(bool)), this, SLOT(covClicked()));
   connect(install_excal_button, SIGNAL(clicked(bool)), this, SLOT(saveExCalClicked()));  // make extrinsics permanent
   connect(calibration_selection_, SIGNAL(currentIndexChanged(int)), this, SLOT(reset_services()));
+  connect(camera_name_, SIGNAL(textChanged()), this, SLOT(reset_services()));
 }
 void calPanel::resetClicked()
 {
@@ -220,13 +223,14 @@ void calPanel::reset_services()
   cov_client_.shutdown();
 
   ros::NodeHandle pnh("~");
-  std::string bcn = calibration_selection_->currentText().toStdString().c_str();
-  std::string start_service_name = "/" + bcn + "Start";
-  std::string run_service_name = "/" + bcn + "Run";
-  std::string obs_service_name = "/" + bcn + "Obs";
-  std::string save_service_name = "/" + bcn + "Save";
-  std::string load_service_name = "/" + bcn + "Load";
-  std::string cov_service_name = "/" + bcn + "Cov";
+  std::string bcn = calibration_selection_->currentText().toStdString();
+  std::string camera = camera_name_->toPlainText().toStdString();
+  std::string start_service_name = camera + "/" + bcn + "Start";
+  std::string run_service_name   = camera + "/" + bcn + "Run";
+  std::string obs_service_name   = camera + "/" + bcn + "Obs";
+  std::string save_service_name  = camera + "/" + bcn + "Save";
+  std::string load_service_name  = camera + "/" + bcn + "Load";
+  std::string cov_service_name   = camera + "/" + bcn + "Cov";
 
   start_client_ = pnh.serviceClient<std_srvs::Trigger>(start_service_name);
   obs_client_ = pnh.serviceClient<std_srvs::Trigger>(obs_service_name);

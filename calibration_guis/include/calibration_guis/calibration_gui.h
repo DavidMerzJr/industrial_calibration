@@ -5,6 +5,7 @@
 #include <QLabel>
 #include <QListWidget>
 #include <QComboBox>
+#include <QPlainTextEdit>
 #include <rviz/panel.h>
 
 class QLineEdit;
@@ -43,6 +44,7 @@ public Q_SLOTS:
 private:
   QLineEdit* allowed_residual_;
   QComboBox* calibration_selection_;
+  QPlainTextEdit* camera_name_;
   QLabel* allowed_resid_lb_;
   QLabel* final_resid_lb_;
   QLabel* obs_msg_lb_;
