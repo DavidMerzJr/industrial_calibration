@@ -376,7 +376,7 @@ public:
     ROS_INFO("now have %d observations after scene %d", total_observations_, scene_);
     scene_++;
 
-    sprintf(msg, "Ical_srv now has %d observations after scene %d", total_observations_, scene_);
+    sprintf(msg, "Wcal_srv now has %d observations after scene %d", total_observations_, scene_);
     res.message = std::string(msg);
     res.success = true;
     return (true);
