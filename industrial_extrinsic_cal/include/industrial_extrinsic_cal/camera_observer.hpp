@@ -358,7 +358,7 @@ public:
     ROS_INFO("average proclivity error = %8.3lf", ave_error);
 
     // In extremely large targets, a few points can be bad but the average error still be tiny
-    if (max_error < 6.5 && ave_error < 2.0)
+    if (max_error < 10.0 && ave_error < 5.0)
     {
       rtn = true;
     }

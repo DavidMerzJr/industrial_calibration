@@ -1,4 +1,6 @@
+#include <algorithm>
 #include <stdio.h>
+#include <string>
 
 #include <QColor>
 #include <QSlider>
@@ -29,7 +31,7 @@ calPanel::calPanel(QWidget* parent) : rviz::Panel(parent)
 
   // this client does not change with the type of calibration
   ros::NodeHandle pnh("~");
-  ecp_client_ = pnh.serviceClient<std_srvs::Trigger>("store_mutable_joint_states");
+  ecp_client_ = pnh.serviceClient<industrial_extrinsic_cal::store_mutable_joint_states>("store_mutable_joint_states");
 
   // these are the currently implemented types of service defined calibration routines
   // Note, WristCal, ICal and StereoCal expect a robot moves to change the scene
@@ -225,6 +227,9 @@ void calPanel::reset_services()
   ros::NodeHandle pnh("~");
   std::string bcn = calibration_selection_->currentText().toStdString();
   std::string camera = camera_name_->toPlainText().toStdString();
+  camera.erase(std::remove(camera.begin(), camera.end(), ' '), camera.end());
+  camera.erase(std::remove(camera.begin(), camera.end(), '\t'), camera.end());
+  camera.erase(std::remove(camera.begin(), camera.end(), '\n'), camera.end());
   std::string start_service_name = camera + "/" + bcn + "Start";
   std::string run_service_name   = camera + "/" + bcn + "Run";
   std::string obs_service_name   = camera + "/" + bcn + "Obs";
